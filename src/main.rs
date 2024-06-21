@@ -1,7 +1,4 @@
-use std::{
-  fs::{self, DirEntry},
-  path::PathBuf,
-};
+use std::{fs, path::PathBuf};
 
 use clap::{ArgAction, Parser};
 
@@ -23,27 +20,44 @@ struct RZipCli {
 fn main() {
   let cli = RZipCli::parse();
 
-  let target_path = cli.target_path;
-  println!("Value for target_path: {:?}", target_path);
-
+  println!("Value for target_path: {:?}", cli.target_path);
   if !cli.live {
     println!("Performing a dry-run. Set --live flag to execute unzip operation.");
   }
 
-  // Continued program logic goes here...
+  // Get a list of zip archives at the target path
+  let archives = match get_archive_entries(&cli.target_path) {
+    Ok(val) => val,
+    Err(e) => {
+      println!("Encountered an error: {e}");
+      return;
+    }
+  };
+
+  if archives.is_empty() {
+    println!("Found no archives");
+    return;
+  }
+
+  println!("Found archives:");
+  for item in archives {
+    println!("{:?}", item)
+  }
 }
 
-fn get_entries(path: &PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
+fn get_archive_entries(path: &PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
   let mut output_entries = Vec::new();
 
   let read_entries = fs::read_dir(path)?;
   for entry in read_entries {
-    let path = entry?.path();
     // Handle directory vs file
+    let path = entry?.path();
     if path.is_dir() {
-      let subpath_entries = get_entries(&path)?;
+      // For directories, we recurse
+      let subpath_entries = get_archive_entries(&path)?;
       output_entries.extend(subpath_entries);
-    } else {
+    } else if is_archive_filetype(&path) {
+      // Files get pushed onto the vector of archive entries
       output_entries.push(path);
     }
   }
@@ -51,13 +65,21 @@ fn get_entries(path: &PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
   Ok(output_entries)
 }
 
-const ARCHIVE_FILENAMES: [&str; 5] = ["zip", "xz", "tar", "gz", "rar"];
+const ARCHIVE_EXTENSIONS: [&str; 5] = ["zip", "xz", "tar", "gz", "rar"];
 
-fn should_add_entry(path: &PathBuf) -> bool {
+fn is_archive_filetype(path: &PathBuf) -> bool {
   // We only collect files
   if path.is_dir() {
     return false;
   }
 
-  todo!()
+  // If we have an extension
+  if let Some(ext) = path.extension() {
+    // And it has a str representation present in the extensions array
+    if let Some(ext_str) = ext.to_str() {
+      return ARCHIVE_EXTENSIONS.contains(&ext_str);
+    }
+  }
+
+  false
 }
