@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.7", features = ["derive"] }
+thiserror = "1.0.61"
+sevenz-rust = { git = "https://github.com/dyz1990/sevenz-rust", rev = "ba03ffb830edc765615538981608454547fa7a65" }
