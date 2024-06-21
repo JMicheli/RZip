@@ -53,14 +53,26 @@ fn handle_dir(params: RZipParams) -> Result<(), RZipError> {
     return Ok(());
   }
 
-  println!("Extracting {} archives...", archives.len());
-  for item_path in archives {
-    print!("{:?}... ", item_path);
+  // Live/dry run headers
+  if params.live {
+    println!("Extracting {} archives...", archives.len());
+  } else {
+    println!("Dry run operations (archive => output path):");
+  }
 
+  // Perform extraction
+  for item_path in archives {
     let out_path = common::get_out_path_for_archive(&item_path, &params)?;
-    match common::recursive_file_extract(&item_path, &out_path, &params) {
-      Ok(_) => print!("Done.\n"),
-      Err(e) => print!("Error: {e}\n"),
+    if params.live {
+      print!("{:?}... ", item_path);
+      // Live run logic
+      match common::recursive_file_extract(&item_path, &out_path, &params) {
+        Ok(_) => print!("Done.\n"),
+        Err(e) => print!("Error: {e}\n"),
+      }
+    } else {
+      // Dry run (explains what it would have done)
+      println!("{} => {}", item_path.display(), out_path.display());
     }
   }
 
@@ -80,11 +92,17 @@ fn handle_file(params: RZipParams) -> Result<(), RZipError> {
     )));
   }
 
-  // Extract
   let out_path = common::get_out_path_for_archive(&params.target_path, &params)?;
-  match common::recursive_file_extract(&params.target_path, &out_path, &params) {
-    Ok(_) => println!("Successfully extracted archive"),
-    Err(e) => println!("Error extracting archive: {e}"),
+  if params.live {
+    // Live run
+    match common::recursive_file_extract(&params.target_path, &out_path, &params) {
+      Ok(_) => println!("Successfully extracted archive"),
+      Err(e) => println!("Error extracting archive: {e}"),
+    }
+  } else {
+    // Dry run
+    println!("Dry run operations (archive => output path):");
+    println!("{} => {}", params.target_path.display(), out_path.display());
   }
 
   Ok(())
