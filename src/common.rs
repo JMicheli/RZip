@@ -1,9 +1,8 @@
 use std::{fs, path::PathBuf};
 
 use clap::{ArgAction, Parser};
-use sevenz_rust;
 
-use crate::error::RZipError;
+use crate::{error::RZipError, unpack};
 
 /// The list of extensinsions used to check if a file is an archive.
 const ARCHIVE_EXTENSIONS: [&str; 6] = ["zip", "xz", "tar", "gz", "7z", "rar"];
@@ -33,7 +32,7 @@ pub fn recursive_file_extract(
   params: &RZipParams,
 ) -> Result<(), RZipError> {
   // Unpack the file
-  sevenz_rust::decompress_file(path, out_path)?;
+  unpack::unpack_file(path, out_path)?;
 
   // Check to see if there are any other zips after extraction and re-call self
   // on each if there are.

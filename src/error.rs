@@ -8,4 +8,6 @@ pub enum RZipError {
   Io(#[from] std::io::Error),
   #[error("Runtime error: {0}")]
   RuntimeError(String),
+  #[error("Unsupported archive: {0}")]
+  UnsupportedArchive(String),
 }

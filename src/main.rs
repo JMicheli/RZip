@@ -1,5 +1,6 @@
 mod common;
 mod error;
+mod unpack;
 
 use clap::Parser;
 

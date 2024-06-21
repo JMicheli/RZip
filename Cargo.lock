@@ -282,7 +282,8 @@ checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 [[package]]
 name = "lzma-rust"
 version = "0.1.6"
-source = "git+https://github.com/dyz1990/sevenz-rust?rev=ba03ffb830edc765615538981608454547fa7a65#ba03ffb830edc765615538981608454547fa7a65"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5edcf5d1f4d78221ea7861fb69899afd15c42601751f92f09a06f7b051fb289"
 dependencies = [
  "byteorder",
 ]
@@ -383,7 +384,8 @@ dependencies = [
 [[package]]
 name = "sevenz-rust"
 version = "0.6.0"
-source = "git+https://github.com/dyz1990/sevenz-rust?rev=ba03ffb830edc765615538981608454547fa7a65#ba03ffb830edc765615538981608454547fa7a65"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a24854621db6137e3f7ed7d82282485874d212c755c3427a7436fc0c62c3d23"
 dependencies = [
  "bit-set",
  "byteorder",
