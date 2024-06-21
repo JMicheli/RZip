@@ -20,10 +20,6 @@ pub struct RZipParams {
   /// The directory to output to
   #[arg(long)]
   pub out_dir: Option<PathBuf>,
-
-  /// Should delete original archives (default: false)
-  #[arg(short, long, action = ArgAction::SetTrue)]
-  pub delete_originals: bool,
 }
 
 pub fn recursive_file_extract(
