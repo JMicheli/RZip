@@ -2,6 +2,8 @@ use std::{fs, path::PathBuf};
 
 use clap::{ArgAction, Parser};
 
+const ARCHIVE_EXTENSIONS: [&str; 5] = ["zip", "xz", "tar", "gz", "rar"];
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct RZipCli {
@@ -64,8 +66,6 @@ fn get_archive_entries(path: &PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
 
   Ok(output_entries)
 }
-
-const ARCHIVE_EXTENSIONS: [&str; 5] = ["zip", "xz", "tar", "gz", "rar"];
 
 fn is_archive_filetype(path: &PathBuf) -> bool {
   // We only collect files
