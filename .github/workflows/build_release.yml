@@ -1,0 +1,140 @@
+name: MD Render automatic build and release
+
+# Release when a tag like v0.1.0 is pushed
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  # Linux
+  # Build application and upload artifact
+  # #####################################
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install libarchive
+        run: sudo apt-get update && sudo apt-get install -y libarchive-dev
+
+      - name: Build application
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target x86_64-unknown-linux-gnu
+
+      - name: Upload basic example artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rzip-binary-x86_64-unknown-linux-gnu
+          path: target/x86_64-unknown-linux-gnu/release/rzip
+
+  # Windows
+  # Build application and upload artifact
+  # #####################################
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Setup vcpkg and install libarchive
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install libarchive:x64-windows
+        shell: cmd
+
+      - name: Build application
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target x86_64-pc-windows-msvc
+
+      - name: Upload basic example artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rzip-binary-x86_64-pc-windows-msvc
+          path: target/x86_64-pc-windows-msvc/release/rzip.exe
+
+  # Download artifact and create release
+  # ####################################
+  release:
+    needs: [build-linux, build-windows]
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          draft: true
+          prerelease: false
+          release_name: ${{ github.ref }}
+          tag_name: release-${{ github.ref }}
+          body_path: changelog.md
+
+      # Linux release assembly
+      - name: Download binary artifact (Linux)
+        uses: actions/download-artifact@v3
+        with:
+          name: rzip-binary-x86_64-unknown-linux-gnu
+          path: RZip-linux
+
+      # Windows release assembly
+      - name: Download binary artifact (Windows)
+        uses: actions/download-artifact@v3
+        with:
+          name: rzip-binary-x86_64-pc-windows-msvc
+          path: RZip-windows
+
+      # Zip Linux and Windows artifacts
+      - name: Zip artifacts
+        run: |
+          sudo apt-get install -y zip
+          cd RZip-linux
+          zip -r ../linux-build-results.zip *
+          cd ../RZip-windows
+          zip -r ../windows-build-results.zip *
+          cd ..
+
+      # Upload release zips
+      - name: Upload release artifact (Linux)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: linux-build-results.zip
+          asset_name: RZip-x64-Linux.zip
+          asset_content_type: application/zip
+
+      - name: Upload release artifact (Windows)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: windows-build-results.zip
+          asset_name: RZip-x64-Windows.zip
+          asset_content_type: application/zip
