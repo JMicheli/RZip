@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 
 use crate::error::RZipError;
 
@@ -18,7 +18,11 @@ pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<(), RZipError> 
     )))?;
 
   match ext {
-    "7z" => sevenz_rust::decompress_file(path, out_path).map_err(|e| e.into()),
+    "7z" | "zip" | "tar" | "gz" | "xz" | "rar" => {
+      let archive_file = File::open(path)?;
+      compress_tools::uncompress_archive(archive_file, out_path, compress_tools::Ownership::Ignore)
+        .map_err(|e| e.into())
+    }
     _ => Err(RZipError::UnsupportedArchive(ext.to_string())),
   }
 }
