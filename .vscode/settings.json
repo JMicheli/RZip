@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": true,
+
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+  },
+  "rust-analyzer.showUnlinkedFileNotification": false,
+
+  "editor.tabSize": 2,
+}
