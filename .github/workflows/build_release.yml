@@ -58,8 +58,8 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: "f7423ee180c4b7f40d43402c2feb3859161ef625"
-          vcpkgJsonGlob: "vcpkg.json"
-          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+          runVcpkgInstall: true
+          vcpkgJsonGlob: "**/vcpkg.json"
 
       - name: Build application
         uses: actions-rs/cargo@v1
