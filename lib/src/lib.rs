@@ -16,7 +16,7 @@ pub struct RZipExtractConfig {
 pub fn recursive_file_extract(
   path: &PathBuf,
   out_path: &PathBuf,
-  params: &RZipExtractConfig,
+  config: &RZipExtractConfig,
 ) -> Result<(), RZipError> {
   // Unpack the file
   unpack::unpack_file(path, out_path)?;
@@ -25,8 +25,8 @@ pub fn recursive_file_extract(
   // on each if there are.
   let residual_archives = get_archives_in_dir(out_path)?;
   for res_path in residual_archives {
-    let res_out_path = get_out_path_for_archive(&res_path, params)?;
-    recursive_file_extract(&res_path, &res_out_path, params)?;
+    let res_out_path = get_out_path_for_archive(&res_path, config)?;
+    recursive_file_extract(&res_path, &res_out_path, config)?;
   }
 
   Ok(())
@@ -34,7 +34,7 @@ pub fn recursive_file_extract(
 
 pub fn get_out_path_for_archive(
   archive_path: &PathBuf,
-  params: &RZipExtractConfig,
+  config: &RZipExtractConfig,
 ) -> Result<PathBuf, RZipError> {
   let output_path = archive_path.file_stem().ok_or_else(|| {
     RZipError::RuntimeError(format!(
@@ -43,12 +43,12 @@ pub fn get_out_path_for_archive(
     ))
   })?;
 
-  if let Some(out_dir) = &params.out_dir {
-    if params.target_path == *archive_path {
+  if let Some(out_dir) = &config.out_dir {
+    if config.target_path == *archive_path {
       return Ok(out_dir.join(output_path));
     }
 
-    let relative_path = get_relative_path(archive_path, params, out_dir)?;
+    let relative_path = get_relative_path(archive_path, config, out_dir)?;
     Ok(construct_output_path(&relative_path, out_dir, output_path))
   } else {
     Ok(archive_path.parent().unwrap().join(output_path))
@@ -57,11 +57,11 @@ pub fn get_out_path_for_archive(
 
 fn get_relative_path(
   archive_path: &PathBuf,
-  params: &RZipExtractConfig,
+  config: &RZipExtractConfig,
   out_dir: &PathBuf,
 ) -> Result<PathBuf, RZipError> {
-  let res = if archive_path.starts_with(&params.target_path) {
-    archive_path.strip_prefix(&params.target_path)
+  let res = if archive_path.starts_with(&config.target_path) {
+    archive_path.strip_prefix(&config.target_path)
   } else {
     archive_path.strip_prefix(&out_dir)
   };

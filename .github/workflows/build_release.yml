@@ -25,6 +25,11 @@ jobs:
       - name: Install libarchive
         run: sudo apt-get update && sudo apt-get install -y libarchive-dev
 
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+
       - name: Build application
         uses: actions-rs/cargo@v1
         with:
@@ -67,6 +72,11 @@ jobs:
           cd lib
           cargo vcpkg build
           cd ..
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
 
       - name: Build application
         uses: actions-rs/cargo@v1

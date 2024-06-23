@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2024-06-23
+
+- (Internal change) Gate releases behind test passage.
+
 ## [0.1.2] - 2024-06-23
 
 - (Internal change) Begin using workspace project layout.
