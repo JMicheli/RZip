@@ -7,7 +7,8 @@ use crate::{error::RZipError, unpack};
 /// The list of extensinsions used to check if a file is an archive.
 const ARCHIVE_EXTENSIONS: [&str; 6] = ["zip", "xz", "tar", "gz", "7z", "rar"];
 
-#[derive(Parser)]
+/// Represents the parameters passed to the RZip utility when run from the command line.
+#[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct RZipParams {
   /// The path to search for files to unzip
@@ -45,37 +46,48 @@ pub fn get_out_path_for_archive(
   archive_path: &PathBuf,
   params: &RZipParams,
 ) -> Result<PathBuf, RZipError> {
-  // Chop off just the filename, no extension
-  let output_path = archive_path
-    .file_stem()
-    .ok_or(RZipError::RuntimeError(format!(
+  let output_path = archive_path.file_stem().ok_or_else(|| {
+    RZipError::RuntimeError(format!(
       "Unable to determine file stem for {}",
       archive_path.display()
-    )))?;
+    ))
+  })?;
 
-  // The outfile differs based on if we have an out_dir specified
-  if let Some(out_dir) = params.out_dir.as_ref() {
-    // Compute the relative path from `target_path` to `archive_path`
-    let rel_path = archive_path
-      .strip_prefix(&params.target_path)
-      .map_err(|e| RZipError::RuntimeError(format!("Strip prefix error {e}")))?;
+  if let Some(out_dir) = &params.out_dir {
+    if params.target_path == *archive_path {
+      return Ok(out_dir.join(output_path));
+    }
 
-    // Remove file name from relative path
-    let rel_dir = rel_path.parent().ok_or(RZipError::RuntimeError(format!(
-      "Unable to determine parent for {}",
-      rel_path.display()
-    )))?;
-
-    // Construct the full output path
-    Ok(out_dir.join(rel_dir).join(&output_path))
+    let relative_path = get_relative_path(archive_path, params, out_dir)?;
+    Ok(construct_output_path(&relative_path, out_dir, output_path))
+  } else {
+    Ok(archive_path.parent().unwrap().join(output_path))
   }
-  // With no out_dir specified we just put it next to the archive
-  else {
-    let parent_dir = archive_path
-      .parent()
-      .expect("Failed to find parent directory");
-    Ok(parent_dir.join(&output_path))
-  }
+}
+
+fn get_relative_path(
+  archive_path: &PathBuf,
+  params: &RZipParams,
+  out_dir: &PathBuf,
+) -> Result<PathBuf, RZipError> {
+  let res = if archive_path.starts_with(&params.target_path) {
+    archive_path.strip_prefix(&params.target_path)
+  } else {
+    archive_path.strip_prefix(&out_dir)
+  };
+
+  res
+    .map_err(|e| RZipError::RuntimeError(format!("Strip prefix error: {}", e)))
+    .map(|res| res.to_path_buf())
+}
+
+fn construct_output_path(
+  relative_path: &PathBuf,
+  out_dir: &PathBuf,
+  output_path: &std::ffi::OsStr,
+) -> PathBuf {
+  let rel_dir = relative_path.parent().unwrap(); // handle errors appropriately
+  out_dir.join(rel_dir).join(output_path)
 }
 
 pub fn is_archive_filetype(path: &PathBuf) -> bool {
