@@ -1,11 +1,33 @@
-mod common;
-mod error;
-mod unpack;
+use std::path::PathBuf;
 
-use clap::Parser;
+use clap::{ArgAction, Parser};
 
-use common::RZipParams;
-use error::RZipError;
+use rzip_lib::{self, RZipError, RZipExtractConfig};
+
+/// Represents the parameters passed to the RZip utility when run from the command line.
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+pub struct RZipParams {
+  /// The path to search for files to unzip
+  pub target_path: PathBuf,
+
+  /// Do a live run (default: false)
+  #[arg(long, action = ArgAction::SetTrue)]
+  pub live: bool,
+
+  /// The directory to output to
+  #[arg(long)]
+  pub out_dir: Option<PathBuf>,
+}
+
+impl From<RZipParams> for RZipExtractConfig {
+  fn from(value: RZipParams) -> Self {
+    Self {
+      target_path: value.target_path,
+      out_dir: value.out_dir,
+    }
+  }
+}
 
 fn main() {
   let params = RZipParams::parse();
@@ -45,7 +67,7 @@ fn main() {
 /// them as indicated by other parameters.
 fn handle_dir(params: RZipParams) -> Result<(), RZipError> {
   // Get a list of zip archives at the target path
-  let archives = common::get_archives_in_dir(&params.target_path)?;
+  let archives = rzip_lib::get_archives_in_dir(&params.target_path)?;
 
   // If no archives are found, exit early
   if archives.is_empty() {
@@ -61,12 +83,14 @@ fn handle_dir(params: RZipParams) -> Result<(), RZipError> {
   }
 
   // Perform extraction
+  let is_live = params.live;
+  let extract_config = params.into();
   for item_path in archives {
-    let out_path = common::get_out_path_for_archive(&item_path, &params)?;
-    if params.live {
+    let out_path = rzip_lib::get_out_path_for_archive(&item_path, &extract_config)?;
+    if is_live {
       print!("{:?}... ", item_path);
       // Live run logic
-      match common::recursive_file_extract(&item_path, &out_path, &params) {
+      match rzip_lib::recursive_file_extract(&item_path, &out_path, &extract_config) {
         Ok(_) => print!("Done.\n"),
         Err(e) => print!("Error: {e}\n"),
       }
@@ -85,24 +109,31 @@ fn handle_dir(params: RZipParams) -> Result<(), RZipError> {
 /// Works by ensuring that the file is an archive and then recursively
 /// unzipping items within it.
 fn handle_file(params: RZipParams) -> Result<(), RZipError> {
-  if !common::is_archive_filetype(&params.target_path) {
+  if !rzip_lib::is_archive_filetype(&params.target_path) {
     return Err(RZipError::RuntimeError(format!(
       "Error: {} is not an archive",
       params.target_path.display()
     )));
   }
 
-  let out_path = common::get_out_path_for_archive(&params.target_path, &params)?;
-  if params.live {
+  let is_live = params.live;
+  let extract_config: RZipExtractConfig = params.into();
+  let out_path = rzip_lib::get_out_path_for_archive(&extract_config.target_path, &extract_config)?;
+  if is_live {
     // Live run
-    match common::recursive_file_extract(&params.target_path, &out_path, &params) {
+    match rzip_lib::recursive_file_extract(&extract_config.target_path, &out_path, &extract_config)
+    {
       Ok(_) => println!("Successfully extracted archive"),
       Err(e) => println!("Error extracting archive: {e}"),
     }
   } else {
     // Dry run
     println!("Dry run operations (archive => output path):");
-    println!("{} => {}", params.target_path.display(), out_path.display());
+    println!(
+      "{} => {}",
+      extract_config.target_path.display(),
+      out_path.display()
+    );
   }
 
   Ok(())

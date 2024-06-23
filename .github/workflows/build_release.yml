@@ -64,9 +64,9 @@ jobs:
 
       - name: Run vcpkg
         run: |
-          cd apps\cli
+          cd lib
           cargo vcpkg build
-          cd ..\..
+          cd ..
 
       - name: Build application
         uses: actions-rs/cargo@v1

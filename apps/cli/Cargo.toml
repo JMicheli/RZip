@@ -1,21 +1,8 @@
 [package]
 name = "rzip"
-version = "0.1.1"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
+rzip_lib = { path = "../../lib" }
 clap = { version = "4.5.7", features = ["derive"] }
-thiserror = "1.0.61"
-compress-tools = "0.14.3"
-
-[package.metadata.vcpkg]
-git = "https://github.com/microsoft/vcpkg"
-tag = "2024.06.15"
-dependencies = ["libarchive"]
-
-[package.metadata.vcpkg.target]
-x86_64-apple-darwin = { dependencies = ["libarchive"] }
-x86_64-unknown-linux-gnu = { dependencies = ["libarchive"] }
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static-md", dependencies = [
-  "libarchive",
-] }

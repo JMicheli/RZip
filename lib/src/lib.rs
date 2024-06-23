@@ -1,32 +1,22 @@
+mod error;
+mod unpack;
+
 use std::{fs, path::PathBuf};
 
-use clap::{ArgAction, Parser};
-
-use crate::{error::RZipError, unpack};
+pub use error::RZipError;
 
 /// The list of extensinsions used to check if a file is an archive.
 const ARCHIVE_EXTENSIONS: [&str; 6] = ["zip", "xz", "tar", "gz", "7z", "rar"];
 
-/// Represents the parameters passed to the RZip utility when run from the command line.
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-pub struct RZipParams {
-  /// The path to search for files to unzip
+pub struct RZipExtractConfig {
   pub target_path: PathBuf,
-
-  /// Do a live run (default: false)
-  #[arg(long, action = ArgAction::SetTrue)]
-  pub live: bool,
-
-  /// The directory to output to
-  #[arg(long)]
   pub out_dir: Option<PathBuf>,
 }
 
 pub fn recursive_file_extract(
   path: &PathBuf,
   out_path: &PathBuf,
-  params: &RZipParams,
+  params: &RZipExtractConfig,
 ) -> Result<(), RZipError> {
   // Unpack the file
   unpack::unpack_file(path, out_path)?;
@@ -44,7 +34,7 @@ pub fn recursive_file_extract(
 
 pub fn get_out_path_for_archive(
   archive_path: &PathBuf,
-  params: &RZipParams,
+  params: &RZipExtractConfig,
 ) -> Result<PathBuf, RZipError> {
   let output_path = archive_path.file_stem().ok_or_else(|| {
     RZipError::RuntimeError(format!(
@@ -67,7 +57,7 @@ pub fn get_out_path_for_archive(
 
 fn get_relative_path(
   archive_path: &PathBuf,
-  params: &RZipParams,
+  params: &RZipExtractConfig,
   out_dir: &PathBuf,
 ) -> Result<PathBuf, RZipError> {
   let res = if archive_path.starts_with(&params.target_path) {

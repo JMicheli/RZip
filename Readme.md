@@ -16,4 +16,4 @@ To actually begin an unzip operation, use the `--live` flag.
 rzip --live ./path/to/target/directory
 ```
 
-(C) 2024 Joseph W. Micheli
+© 2024 Joseph W. Micheli
