@@ -95,14 +95,14 @@ jobs:
 
       # Linux release assembly
       - name: Download binary artifact (Linux)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: rzip-binary-x86_64-unknown-linux-gnu
           path: RZip-linux
 
       # Windows release assembly
       - name: Download binary artifact (Windows)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: rzip-binary-x86_64-pc-windows-msvc
           path: RZip-windows
