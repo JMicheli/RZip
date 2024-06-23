@@ -53,12 +53,11 @@ jobs:
           toolchain: stable
 
       - name: Cache cargo-vcpkg dependencies
-        uses: actions/cache@v3
+        id: cache-vcpkg
+        uses: actions/cache@v4
         with:
-         path: |
-            target/vcpkg/
+          path: target/vcpkg/
           key: ${{ runner.os }}-cargo-vcpkg-${{ hashFiles('**/Cargo.lock') }}
-
 
       - name: Install cargo-vcpkg
         run: cargo install cargo-vcpkg
