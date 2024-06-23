@@ -91,7 +91,7 @@ jobs:
           prerelease: false
           release_name: ${{ github.ref }}
           tag_name: release-${{ github.ref }}
-          body_path: changelog.md
+          body_path: .github/changelog.md
 
       # Linux release assembly
       - name: Download binary artifact (Linux)
