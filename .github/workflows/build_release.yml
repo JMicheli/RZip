@@ -43,8 +43,6 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
-    env:
-      VCPKG_ROOT: ${{ github.workspace }}\vcpkg
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,12 +52,11 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Install cargo-vcpkg
+        run: cargo install cargo-vcpkg
+
       - name: Run vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: "f7423ee180c4b7f40d43402c2feb3859161ef625"
-          runVcpkgInstall: true
-          vcpkgJsonGlob: "**/vcpkg.json"
+        run: cargo vcpkg build
 
       - name: Build application
         uses: actions-rs/cargo@v1
