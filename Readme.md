@@ -16,10 +16,32 @@ To actually begin an unzip operation, use the `--live` flag.
 rzip --live ./path/to/target/directory
 ```
 
-You can also specify an output directory for the extracted files using the `--out-dir` option. If not specified, the files will be extracted to the current working directory.
+By default, the files will be extracted to the same directory as each original archive file. For example, given the folder structure:
 
 ```bash
-rzip --live --out-dir=./path/to/output/directory ./path/to/target/directory
+zip1.zip
+subfolder
+└── zip2.zip
+```
+
+Running `rzip --live .` from this folder will extract to:
+
+```bash
+zip1.zip
+zip1
+├── doc1.txt
+└── doc2.txt
+subfolder
+├── zip2.zip
+└── zip2
+    ├── doc3.txt
+    └── doc4.txt
+```
+
+You can also specify an output directory for the extracted files using the `--out-dir` option.
+
+```bash
+rzip --live --out-dir ./path/to/output/directory ./path/to/target/directory
 ```
 
 © 2024 Joseph W. Micheli
