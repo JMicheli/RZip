@@ -32,7 +32,6 @@ impl From<RZipParams> for RZipExtractConfig {
 fn main() {
   let params = RZipParams::parse();
 
-  println!("Value for target_path: {:?}", params.target_path);
   if !params.live {
     println!("Performing a dry-run. Set --live flag to execute unzip operation.");
   }

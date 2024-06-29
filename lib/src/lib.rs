@@ -1,12 +1,12 @@
 mod error;
-mod unpack;
+pub mod unpack;
 
 use std::{fs, path::PathBuf};
 
 pub use error::RZipError;
 
 /// The list of extensinsions used to check if a file is an archive.
-const ARCHIVE_EXTENSIONS: [&str; 6] = ["zip", "xz", "tar", "gz", "7z", "rar"];
+const ARCHIVE_EXTENSIONS: [&str; 7] = ["zip", "xz", "tar", "tgz", "gz", "7z", "rar"];
 
 pub struct RZipExtractConfig {
   pub target_path: PathBuf,
@@ -19,7 +19,10 @@ pub fn recursive_file_extract(
   config: &RZipExtractConfig,
 ) -> Result<(), RZipError> {
   // Unpack the file
-  unpack::unpack_file(path, out_path)?;
+  match unpack::unpack_file(path, out_path) {
+    Ok(_) => (),
+    Err(e) => return Err(e),
+  }
 
   // Check to see if there are any other zips after extraction and re-call self
   // on each if there are.
