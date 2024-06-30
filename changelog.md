@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
-- (Internal changes) Alter library to support chained unzipping backends
+- (Internal changes)
+  - Alter library to support chained unzipping backends
+  - Update Clap to 4.5.8.
 
 ## [0.1.3] - 2024-06-23
 
