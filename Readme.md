@@ -44,4 +44,4 @@ You can also specify an output directory for the extracted files using the `--ou
 rzip --live --out-dir ./path/to/output/directory ./path/to/target/directory
 ```
 
-© 2024 Joseph W. Micheli
+© 2024 Joseph W. Micheli, see License.txt for more information.

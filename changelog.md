@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+- (Internal changes) Alter library to support chained unzipping backends
+
 ## [0.1.3] - 2024-06-23
 
-- (Internal change) Gate releases behind test passage.
+- (Internal change) Add test harness and associated git worfklows.
 
 ## [0.1.2] - 2024-06-23
 
@@ -19,7 +23,3 @@ All notable changes to this project will be documented in this file. This projec
 - Launch of the first stable release.
 - Added basic capability to unzip a directory or single file recursively.
 - Based on rust project [compress-tools](https://github.com/OSSystems/compress-tools-rs) wrapping [libarchive](https://www.libarchive.org/).
-
-## [Unreleased]
-
-- Initial setup and configuration.
