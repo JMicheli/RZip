@@ -22,9 +22,9 @@ pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZip
   let unpack_stages: Vec<UnpackStage> = match ext {
     "zip" => vec![compress_tools_unpack],
     "7z" => vec![compress_tools_unpack, seven_z_unpack],
-    "gz" | "tgz" => vec![compress_tools_unpack],
+    "gz" | "tgz" => vec![compress_tools_unpack, flake2_unpack],
     "xz" => vec![compress_tools_unpack],
-    "tar" => vec![compress_tools_unpack],
+    "tar" => vec![compress_tools_unpack, tar_unpack],
     "rar" => vec![compress_tools_unpack],
     _ => {
       return Err(RZipError::RuntimeError(format!(
@@ -49,6 +49,9 @@ pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZip
   Err(RZipError::ProcessingErrors(errors))
 }
 
+/// Unpack an archive using the [compress_tools] backend.
+///
+/// Documentation: https://github.com/OSSystems/compress-tools-rs/.
 pub fn compress_tools_unpack(
   archive_path: &PathBuf,
   out_path: &PathBuf,
@@ -58,9 +61,43 @@ pub fn compress_tools_unpack(
     .map_err(|e| e.into())
 }
 
+/// Unpack an archive using the [sevenz_rust] backend.
+///
+/// Documentation: https://github.com/dyz1990/sevenz-rust
 pub fn seven_z_unpack(
   archive_path: &PathBuf,
   out_path: &PathBuf,
 ) -> Result<(), RZipProcessingError> {
   sevenz_rust::decompress_file(archive_path, out_path).map_err(|e| e.into())
+}
+
+/// Unpack an archive using the [flate2] backend.
+///
+/// Documentation: https://docs.rs/flate2/latest/flate2/
+pub fn flake2_unpack(
+  archive_path: &PathBuf,
+  out_path: &PathBuf,
+) -> Result<(), RZipProcessingError> {
+  use flate2::read::GzDecoder;
+  use tar::Archive;
+
+  let tar_gz = File::open(archive_path)?;
+  let tar = GzDecoder::new(tar_gz);
+  let mut archive = Archive::new(tar);
+  archive.unpack(out_path)?;
+
+  Ok(())
+}
+
+/// Unpack an archive using the [tar] backend.
+///
+/// Documentation: https://docs.rs/tar/latest/tar/
+pub fn tar_unpack(archive_path: &PathBuf, out_path: &PathBuf) -> Result<(), RZipProcessingError> {
+  use tar::Archive;
+
+  let tar = File::open(archive_path).unwrap();
+  let mut archive: Archive<File> = Archive::new(tar);
+  archive.unpack(out_path)?;
+
+  Ok(())
 }

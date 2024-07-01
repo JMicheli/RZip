@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2024-06-30
 
 - (Internal changes)
   - Alter library to support chained unzipping backends
   - Update Clap to 4.5.8.
+- Add sevenz-rust, flake2, and tar unpacking backends
 
 ## [0.1.3] - 2024-06-23
 
