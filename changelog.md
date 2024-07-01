@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2024-07-01
+
+- (Internal change) Update release mechanism to use manually-triggered worklow.
+
 ## [0.2.0] - 2024-06-30
 
 - (Internal changes)
