@@ -1,10 +1,12 @@
 name: RZip automatic build and release
 
-# Release when a tag like v0.1.0 is pushed
+# Manual release with input version number
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Enter the release version (e.g., 0.1.0)"
+        required: true
 
 jobs:
   # Linux
@@ -109,8 +111,8 @@ jobs:
         with:
           draft: true
           prerelease: false
-          release_name: ${{ github.ref }}
-          tag_name: release-${{ github.ref }}
+          release_name: Release ${{ github.event.inputs.version }}
+          tag_name: v${{ github.event.inputs.version }}
           body_path: changelog.md
 
       # Linux release assembly
@@ -138,6 +140,7 @@ jobs:
           cd ..
 
       # Upload release zips
+      # Linux
       - name: Upload release artifact (Linux)
         uses: actions/upload-release-asset@v1
         env:
@@ -147,7 +150,7 @@ jobs:
           asset_path: linux-build-results.zip
           asset_name: RZip-x64-Linux.zip
           asset_content_type: application/zip
-
+      # Windows
       - name: Upload release artifact (Windows)
         uses: actions/upload-release-asset@v1
         env:
