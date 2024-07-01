@@ -1,2 +1,5 @@
 /target
 /vcpkg_installed
+
+# Code coverage
+/lcov.info
