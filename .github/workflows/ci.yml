@@ -1,0 +1,89 @@
+name: RZip CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  linux-ci:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      # Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Install rust toolchain
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      # Load/initialize cache
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      # Install libarchive
+      - name: Install libarchive
+        run: sudo apt-get update && sudo apt-get install -y libarchive-dev
+      # Install code coverage tooling
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+      # Run dev tests
+      - name: Run tests
+        run: cargo test
+      # Run coverage tests
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      # Upload coverage data
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: true
+  windows-ci:
+    runs-on: windows-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      # Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Install rust toolchain
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      # Load/initialize cache
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      # Install cargo-vcpkg
+      - name: Install cargo-vcpkg
+        run: cargo install cargo-vcpkg
+      # Build vcpkg for library
+      - name: Run vcpkg
+        run: |
+          cd lib
+          cargo vcpkg build
+          cd ..
+      # Cargo test
+      - name: Run dev tests
+        run: cargo test
+      # Cargo test --release
+      - name: Run release tests
+        run: cargo test --release
