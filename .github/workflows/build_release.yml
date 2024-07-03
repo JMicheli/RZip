@@ -14,19 +14,21 @@ jobs:
   # #####################################
   build-linux:
     runs-on: ubuntu-latest
-
+    env:
+      CARGO_TERM_COLOR: always
     steps:
+      # Checkout code
       - name: Checkout
         uses: actions/checkout@v4
-
+      # Install rust toolchain
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-
+      # Install libarchive
       - name: Install libarchive
         run: sudo apt-get update && sudo apt-get install -y libarchive-dev
-
+      # Load/initialize cache
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -36,13 +38,13 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
+      # Cargo test
       - name: Run tests
         run: cargo test --release
-
+      # Cargo build
       - name: Build application
         run: cargo build --release --target x86_64-unknown-linux-gnu
-
+      # Upload Linux build artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -54,16 +56,18 @@ jobs:
   # #####################################
   build-windows:
     runs-on: windows-latest
-
+    env:
+      CARGO_TERM_COLOR: always
     steps:
+      # Checkout code
       - name: Checkout
         uses: actions/checkout@v4
-
+      # Install rust toolchain
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-
+      # Load/initialize cach
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -73,22 +77,22 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
+      # Install cargo-vcpkg
       - name: Install cargo-vcpkg
         run: cargo install cargo-vcpkg
-
+      # Build vcpkg for library
       - name: Run vcpkg
         run: |
           cd lib
           cargo vcpkg build
           cd ..
-
+      # Cargo test
       - name: Run tests
         run: cargo test --release
-
+      # Cargo build
       - name: Build application
         run: cargo build --release --target x86_64-pc-windows-msvc
-
+      # Upload Windows build artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
