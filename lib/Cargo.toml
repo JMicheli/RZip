@@ -5,7 +5,7 @@ edition.workspace = true
 
 [dependencies]
 thiserror = "1.0.61"
-compress-tools = "0.14.3"
+compress-tools = "0.15.0"
 sevenz-rust = "0.6.0"
 flate2 = "1.0.30"
 tar = "0.4.41"

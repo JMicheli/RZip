@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. This projec
 ## [0.2.1] - 2024-07-01
 
 - (Internal change) Update release mechanism to use manually-triggered worklow.
+- Update compress-tools dependency to 0.15.0
 
 ## [0.2.0] - 2024-06-30
 
