@@ -6,3 +6,6 @@ edition.workspace = true
 [dependencies]
 rzip_lib = { path = "../../lib" }
 clap = { version = "4.5.8", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }

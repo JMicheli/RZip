@@ -137,3 +137,94 @@ fn handle_file(params: RZipParams) -> Result<(), RZipError> {
 
   Ok(())
 }
+
+#[cfg(test)]
+mod test {
+  use std::{fs, path::Path};
+
+  use tempfile::TempDir;
+
+  use super::*;
+
+  #[test]
+  fn test_handle_dir() {
+    let temp_dir = TempDir::new().unwrap();
+    let target_path = temp_dir.path().join("test_data");
+    fs::create_dir_all(&target_path).unwrap();
+    let out_path = temp_dir.path().join("output/path/");
+    copy_tar_gz_data_to(&target_path);
+
+    // Run test function (dry run)
+    let params = RZipParams {
+      target_path: target_path.clone(),
+      live: false,
+      out_dir: Some(out_path.clone()),
+    };
+    handle_dir(params).unwrap();
+
+    // Run test function (live run)
+    let params = RZipParams {
+      target_path: target_path.clone(),
+      live: true,
+      out_dir: Some(out_path.clone()),
+    };
+    handle_dir(params).unwrap();
+
+    // Test expected files
+    let packed_tar_gz_tar_gz = temp_dir.path().join("test_data/packed_tar_gz.tar.gz");
+    let packed_tar_dir = out_path.join("packed_tar_gz.tar");
+    let doc_tar_gz = out_path.join("packed_tar_gz.tar/doc_tar_gz.txt");
+    assert!(packed_tar_gz_tar_gz.exists());
+    assert!(packed_tar_dir.exists());
+    assert!(doc_tar_gz.exists());
+  }
+
+  #[test]
+  fn test_handle_file() {
+    let temp_dir = TempDir::new().unwrap();
+    let out_path = temp_dir.path().join("output/path/");
+    copy_tar_gz_data_to(temp_dir.path());
+
+    // Run test function (dry run)
+    let params = RZipParams {
+      target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
+      live: false,
+      out_dir: Some(out_path.clone()),
+    };
+    handle_file(params).unwrap();
+
+    // Run test function (live run)
+    let params = RZipParams {
+      target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
+      live: true,
+      out_dir: Some(out_path.clone()),
+    };
+    handle_file(params).unwrap();
+
+    // Test expected files
+    let packed_tar_gz_tar_gz = temp_dir.path().join("packed_tar_gz.tar.gz");
+    let packed_tar_dir = out_path.join("packed_tar_gz.tar");
+    let doc_tar_gz = out_path.join("packed_tar_gz.tar/doc_tar_gz.txt");
+    assert!(packed_tar_gz_tar_gz.exists());
+    assert!(packed_tar_dir.exists());
+    assert!(doc_tar_gz.exists());
+  }
+
+  fn get_individual_data_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../lib/tests/data/indiv")
+  }
+
+  /// Copies data to the input `temp_dir`. The data has the structure:
+  ///
+  /// ```bash
+  /// packed_tar_gz.tar.gz
+  /// └── doc_tar_gz.txt
+  /// ```
+  fn copy_tar_gz_data_to(temp_dir: &Path) {
+    let data_root = get_individual_data_root();
+    let packed_tar = data_root.join("packed_tar_gz.tar.gz");
+
+    // Copy each item to temporary directory
+    fs::copy(packed_tar, temp_dir.join("packed_tar_gz.tar.gz")).unwrap();
+  }
+}
