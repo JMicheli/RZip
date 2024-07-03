@@ -18,6 +18,10 @@ pub struct RZipParams {
   /// The directory to output to
   #[arg(long)]
   pub out_dir: Option<PathBuf>,
+
+  /// Delete archives after extracting (default: false)
+  #[arg(long, action = ArgAction::SetTrue)]
+  pub delete_archives: bool,
 }
 
 impl From<RZipParams> for RZipExtractConfig {
@@ -25,6 +29,7 @@ impl From<RZipParams> for RZipExtractConfig {
     Self {
       target_path: value.target_path,
       out_dir: value.out_dir,
+      delete_after_extracting: value.delete_archives,
     }
   }
 }
@@ -90,8 +95,8 @@ fn handle_dir(params: RZipParams) -> Result<(), RZipError> {
       print!("{:?}... ", item_path);
       // Live run logic
       match rzip_lib::recursive_file_extract(&item_path, &out_path, &extract_config) {
-        Ok(_) => print!("Done.\n"),
-        Err(e) => print!("Error: {e}\n"),
+        Ok(_) => println!("Done."),
+        Err(e) => println!("Error: {e}"),
       }
     } else {
       // Dry run (explains what it would have done)
@@ -159,6 +164,7 @@ mod test {
       target_path: target_path.clone(),
       live: false,
       out_dir: Some(out_path.clone()),
+      delete_archives: false,
     };
     handle_dir(params).unwrap();
 
@@ -167,6 +173,7 @@ mod test {
       target_path: target_path.clone(),
       live: true,
       out_dir: Some(out_path.clone()),
+      delete_archives: false,
     };
     handle_dir(params).unwrap();
 
@@ -190,6 +197,7 @@ mod test {
       target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
       live: false,
       out_dir: Some(out_path.clone()),
+      delete_archives: false,
     };
     handle_file(params).unwrap();
 
@@ -198,6 +206,7 @@ mod test {
       target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
       live: true,
       out_dir: Some(out_path.clone()),
+      delete_archives: false,
     };
     handle_file(params).unwrap();
 

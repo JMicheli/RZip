@@ -5,8 +5,6 @@ use std::{
 
 use tempfile::TempDir;
 
-use rzip_lib;
-
 /// Copies "nested" data from test data to the `temp_dir` provided. The data has this structure:
 ///
 /// ```bash
@@ -43,6 +41,7 @@ fn test_nested_no_out_dir() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&target_path, &config).unwrap();
@@ -101,6 +100,7 @@ fn test_nested_with_out_dir() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: Some(out_dir_buf.clone()),
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&target_path, &config).unwrap();

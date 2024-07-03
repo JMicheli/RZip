@@ -1,10 +1,10 @@
-use std::{fs::File, path::PathBuf};
+use std::{fs::File, path::Path};
 
 use crate::error::{RZipError, RZipProcessingError};
 
-type UnpackStage = fn(&PathBuf, &PathBuf) -> Result<(), RZipProcessingError>;
+type UnpackStage = fn(&Path, &Path) -> Result<(), RZipProcessingError>;
 
-pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZipError> {
+pub fn unpack_file(path: &Path, out_path: &Path) -> Result<RZipError, RZipError> {
   // Get extension
   // TODO - Handle .tar.gz
   let ext = path
@@ -53,8 +53,8 @@ pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZip
 ///
 /// Documentation: https://github.com/OSSystems/compress-tools-rs/.
 pub fn compress_tools_unpack(
-  archive_path: &PathBuf,
-  out_path: &PathBuf,
+  archive_path: &Path,
+  out_path: &Path,
 ) -> Result<(), RZipProcessingError> {
   let archive_file: File = File::open(archive_path)?;
   compress_tools::uncompress_archive(archive_file, out_path, compress_tools::Ownership::Ignore)
@@ -64,20 +64,14 @@ pub fn compress_tools_unpack(
 /// Unpack an archive using the [sevenz_rust] backend.
 ///
 /// Documentation: https://github.com/dyz1990/sevenz-rust
-pub fn seven_z_unpack(
-  archive_path: &PathBuf,
-  out_path: &PathBuf,
-) -> Result<(), RZipProcessingError> {
+pub fn seven_z_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProcessingError> {
   sevenz_rust::decompress_file(archive_path, out_path).map_err(|e| e.into())
 }
 
 /// Unpack an archive using the [flate2] backend.
 ///
 /// Documentation: https://docs.rs/flate2/latest/flate2/
-pub fn flake2_unpack(
-  archive_path: &PathBuf,
-  out_path: &PathBuf,
-) -> Result<(), RZipProcessingError> {
+pub fn flake2_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProcessingError> {
   use flate2::read::GzDecoder;
   use tar::Archive;
 
@@ -92,7 +86,7 @@ pub fn flake2_unpack(
 /// Unpack an archive using the [tar] backend.
 ///
 /// Documentation: https://docs.rs/tar/latest/tar/
-pub fn tar_unpack(archive_path: &PathBuf, out_path: &PathBuf) -> Result<(), RZipProcessingError> {
+pub fn tar_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProcessingError> {
   use tar::Archive;
 
   let tar = File::open(archive_path).unwrap();
