@@ -20,6 +20,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+      # Install libarchive
+      - name: Install libarchive
+        run: sudo apt-get update && sudo apt-get install -y libarchive-dev
       # Install code coverage tooling
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
