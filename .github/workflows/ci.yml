@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  linux-ci-test:
+  linux-ci:
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
@@ -49,7 +49,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
           fail_ci_if_error: true
-  windows-ci-test:
+  windows-ci:
     runs-on: windows-latest
     env:
       CARGO_TERM_COLOR: always
@@ -73,7 +73,7 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       # Install cargo-vcpkg
-      - name: Install cargo-vcpkg and llvm-cov
+      - name: Install cargo-vcpkg
         run: cargo install cargo-vcpkg
       # Build vcpkg for library
       - name: Run vcpkg
