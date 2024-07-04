@@ -1,16 +1,20 @@
 mod error;
 pub mod unpack;
 
-use std::{fs, path::PathBuf};
+use std::{
+  fs,
+  path::{Path, PathBuf},
+};
 
 pub use error::RZipError;
 
 /// The list of extensinsions used to check if a file is an archive.
-const ARCHIVE_EXTENSIONS: [&str; 7] = ["zip", "xz", "tar", "tgz", "gz", "7z", "rar"];
+const ARCHIVE_EXTENSIONS: [&str; 8] = ["zip", "txz", "xz", "tar", "tgz", "gz", "7z", "rar"];
 
 pub struct RZipExtractConfig {
   pub target_path: PathBuf,
   pub out_dir: Option<PathBuf>,
+  pub delete_after_extracting: bool,
 }
 
 pub fn recursive_file_extract(
@@ -30,6 +34,11 @@ pub fn recursive_file_extract(
   for res_path in residual_archives {
     let res_out_path = get_out_path_for_archive(&res_path, config)?;
     recursive_file_extract(&res_path, &res_out_path, config)?;
+  }
+
+  // Delete the file if the configuration calls for it
+  if config.delete_after_extracting {
+    fs::remove_file(path)?;
   }
 
   Ok(())
@@ -59,14 +68,14 @@ pub fn get_out_path_for_archive(
 }
 
 fn get_relative_path(
-  archive_path: &PathBuf,
+  archive_path: &Path,
   config: &RZipExtractConfig,
-  out_dir: &PathBuf,
+  out_dir: &Path,
 ) -> Result<PathBuf, RZipError> {
   let res = if archive_path.starts_with(&config.target_path) {
     archive_path.strip_prefix(&config.target_path)
   } else {
-    archive_path.strip_prefix(&out_dir)
+    archive_path.strip_prefix(out_dir)
   };
 
   res
@@ -75,15 +84,15 @@ fn get_relative_path(
 }
 
 fn construct_output_path(
-  relative_path: &PathBuf,
-  out_dir: &PathBuf,
+  relative_path: &Path,
+  out_dir: &Path,
   output_path: &std::ffi::OsStr,
 ) -> PathBuf {
   let rel_dir = relative_path.parent().unwrap(); // handle errors appropriately
   out_dir.join(rel_dir).join(output_path)
 }
 
-pub fn is_archive_filetype(path: &PathBuf) -> bool {
+pub fn is_archive_filetype(path: &Path) -> bool {
   // We only collect files
   if path.is_dir() {
     return false;

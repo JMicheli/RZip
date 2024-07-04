@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [0.2.1] - 2024-07-01
 
-- (Internal change) Update release mechanism to use manually-triggered worklow.
+- (Internal change)
+  - Update release mechanism to use manually-triggered worklow.
+  - Add CI automation.
 - Update compress-tools dependency to 0.15.0
+- Add support for deleting archives after they are unpacked.
 
 ## [0.2.0] - 2024-06-30
 

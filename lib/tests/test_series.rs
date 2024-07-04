@@ -5,8 +5,6 @@ use std::{
 
 use tempfile::TempDir;
 
-use rzip_lib;
-
 /// Copies "series" data from test data to the `temp_dir` provided. The data has this structure:
 ///
 /// ```bash
@@ -44,6 +42,7 @@ fn test_series_no_out_dir() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir_path_buf.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let archives = rzip_lib::get_archives_in_dir(&temp_dir_path_buf).unwrap();
@@ -88,6 +87,61 @@ fn test_series_no_out_dir() {
 }
 
 #[test]
+fn test_series_with_deletion() {
+  let temp_dir = TempDir::new().unwrap();
+  let temp_dir_path_buf = temp_dir.path().to_path_buf();
+  copy_series_data_to(temp_dir.path());
+
+  let config = rzip_lib::RZipExtractConfig {
+    target_path: temp_dir_path_buf.clone(),
+    out_dir: None,
+    delete_after_extracting: true,
+  };
+
+  let archives = rzip_lib::get_archives_in_dir(&temp_dir_path_buf).unwrap();
+
+  for archive in archives {
+    let out_path = rzip_lib::get_out_path_for_archive(&archive, &config).unwrap();
+    rzip_lib::recursive_file_extract(&archive, &out_path, &config).unwrap()
+  }
+
+  // Test the existence of each expected file
+  let doc_set1_zip = temp_dir.path().join("doc_set1.zip");
+  let doc_set1_dir = temp_dir.path().join("doc_set1");
+  let doc1_txt = temp_dir.path().join("doc_set1/doc1.txt");
+  let doc2_txt = temp_dir.path().join("doc_set1/doc2.txt");
+  let doc3_txt = temp_dir.path().join("doc_set1/doc3.txt");
+  let doc_set2_zip = temp_dir.path().join("doc_set2.zip");
+  let doc_set2_dir = temp_dir.path().join("doc_set2");
+  let doc4_txt = temp_dir.path().join("doc_set2/doc4.txt");
+  let doc5_txt = temp_dir.path().join("doc_set2/doc5.txt");
+  let doc6_txt = temp_dir.path().join("doc_set2/doc6.txt");
+  let doc_set3_zip = temp_dir.path().join("doc_set3.zip");
+  let doc_set3_dir = temp_dir.path().join("doc_set3");
+  let doc7_txt = temp_dir.path().join("doc_set3/doc7.txt");
+  let doc8_txt = temp_dir.path().join("doc_set3/doc8.txt");
+  let doc9_txt = temp_dir.path().join("doc_set3/doc9.txt");
+  // Assertions
+  // These should have been deleted
+  assert!(!doc_set1_zip.exists());
+  assert!(!doc_set2_zip.exists());
+  assert!(!doc_set3_zip.exists());
+  // These should still exist
+  assert!(doc_set1_dir.exists());
+  assert!(doc1_txt.exists());
+  assert!(doc2_txt.exists());
+  assert!(doc3_txt.exists());
+  assert!(doc_set2_dir.exists());
+  assert!(doc4_txt.exists());
+  assert!(doc5_txt.exists());
+  assert!(doc6_txt.exists());
+  assert!(doc_set3_dir.exists());
+  assert!(doc7_txt.exists());
+  assert!(doc8_txt.exists());
+  assert!(doc9_txt.exists());
+}
+
+#[test]
 fn test_series_with_out_dir() {
   let temp_dir = TempDir::new().unwrap();
   let temp_dir_path_buf = temp_dir.path().to_path_buf();
@@ -98,6 +152,7 @@ fn test_series_with_out_dir() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir_path_buf.clone(),
     out_dir: Some(out_dir_path.clone()),
+    delete_after_extracting: false,
   };
 
   let archives = rzip_lib::get_archives_in_dir(&temp_dir_path_buf).unwrap();

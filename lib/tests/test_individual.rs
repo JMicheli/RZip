@@ -31,6 +31,7 @@ fn test_extract_7z() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir.path().join("packed_7z.7z"),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -41,6 +42,31 @@ fn test_extract_7z() {
   let packed_7z_dir = temp_dir.path().join("packed_7z");
   let doc_7z = temp_dir.path().join("packed_7z/doc_7z.txt");
   assert!(packed_7z_7z.exists());
+  assert!(packed_7z_dir.exists());
+  assert!(doc_7z.exists());
+}
+
+#[test]
+fn test_extract_7z_with_deletion() {
+  let temp_dir = TempDir::new().unwrap();
+  copy_7z_data_to(temp_dir.path());
+
+  let config = rzip_lib::RZipExtractConfig {
+    target_path: temp_dir.path().join("packed_7z.7z"),
+    out_dir: None,
+    // Testing deletion
+    delete_after_extracting: true,
+  };
+
+  let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
+  rzip_lib::recursive_file_extract(&config.target_path, &out_path, &config).unwrap();
+
+  // Test expected files
+  let packed_7z_7z = temp_dir.path().join("packed_7z.7z");
+  let packed_7z_dir = temp_dir.path().join("packed_7z");
+  let doc_7z = temp_dir.path().join("packed_7z/doc_7z.txt");
+  // This file should have been deleted
+  assert!(!packed_7z_7z.exists());
   assert!(packed_7z_dir.exists());
   assert!(doc_7z.exists());
 }
@@ -67,6 +93,7 @@ fn test_extract_tar() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir.path().join("packed_tar.tar"),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -103,6 +130,7 @@ fn test_extract_tar_gz() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -139,6 +167,7 @@ fn test_extract_tar_xz() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir.path().join("packed_tar_xz.tar.xz"),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -175,6 +204,7 @@ fn test_extract_zip() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir.path().join("packed_zip.zip"),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -211,6 +241,7 @@ fn test_extract_rar() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: temp_dir.path().join("packed_rar.rar"),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();

@@ -5,8 +5,6 @@ use std::{
 
 use tempfile::TempDir;
 
-use rzip_lib;
-
 /// Copies "nested" data from test data to the `temp_dir` provided. The data has this structure:
 ///
 /// ```bash
@@ -43,6 +41,7 @@ fn test_nested_no_out_dir() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&target_path, &config).unwrap();
@@ -91,6 +90,65 @@ fn test_nested_no_out_dir() {
 }
 
 #[test]
+fn test_nested_with_deletion() {
+  let temp_dir = TempDir::new().unwrap();
+  let target_path = temp_dir.path().join("nested.zip");
+  copy_nested_data_to(temp_dir.path());
+
+  let config = rzip_lib::RZipExtractConfig {
+    target_path: target_path.clone(),
+    out_dir: None,
+    delete_after_extracting: true,
+  };
+
+  let out_path = rzip_lib::get_out_path_for_archive(&target_path, &config).unwrap();
+  rzip_lib::recursive_file_extract(&target_path, &out_path, &config).unwrap();
+
+  // Test the existence of each expected file
+  let nested = temp_dir.path().join("nested");
+  let doc_set1_zip = nested.join("doc_set1.zip");
+  let doc_set1 = nested.join("doc_set1");
+  let doc_set1_doc1 = nested.join("doc_set1/doc1.txt");
+  let doc_set1_doc2 = nested.join("doc_set1/doc2.txt");
+  let doc_set1_doc3 = nested.join("doc_set1/doc3.txt");
+  let doc_set2_zip = nested.join("doc_set2.zip");
+  let doc_set2 = nested.join("doc_set2");
+  let doc_set2_doc4 = nested.join("doc_set2/doc4.txt");
+  let doc_set2_doc5 = nested.join("doc_set2/doc5.txt");
+  let doc_set2_doc6 = nested.join("doc_set2/doc6.txt");
+  let doc_set3_zip = nested.join("doc_set3.zip");
+  let doc_set3 = nested.join("doc_set3");
+  let doc_set3_doc7 = nested.join("doc_set3/doc7.txt");
+  let doc_set3_doc8 = nested.join("doc_set3/doc8.txt");
+  let doc_set3_doc9 = nested.join("doc_set3/doc9.txt");
+  let doc1 = nested.join("doc1.txt");
+  let doc2 = nested.join("doc2.txt");
+  let doc3 = nested.join("doc3.txt");
+  // Do assertions
+  // These files should have been deleted
+  assert!(!doc_set1_zip.exists());
+  assert!(!doc_set2_zip.exists());
+  assert!(!doc_set3_zip.exists());
+  // These should still exist
+  assert!(nested.exists());
+  assert!(doc_set1.exists());
+  assert!(doc_set1_doc1.exists());
+  assert!(doc_set1_doc2.exists());
+  assert!(doc_set1_doc3.exists());
+  assert!(doc_set2.exists());
+  assert!(doc_set2_doc4.exists());
+  assert!(doc_set2_doc5.exists());
+  assert!(doc_set2_doc6.exists());
+  assert!(doc_set3.exists());
+  assert!(doc_set3_doc7.exists());
+  assert!(doc_set3_doc8.exists());
+  assert!(doc_set3_doc9.exists());
+  assert!(doc1.exists());
+  assert!(doc2.exists());
+  assert!(doc3.exists());
+}
+
+#[test]
 fn test_nested_with_out_dir() {
   let temp_dir = TempDir::new().unwrap();
   let target_path = temp_dir.path().join("nested.zip");
@@ -101,6 +159,7 @@ fn test_nested_with_out_dir() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: Some(out_dir_buf.clone()),
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&target_path, &config).unwrap();

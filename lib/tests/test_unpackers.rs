@@ -32,6 +32,7 @@ fn test_compress_tools_unpack() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -69,6 +70,7 @@ fn test_seven_z_unpack() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -106,6 +108,7 @@ fn test_flake2_unpack() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();
@@ -143,6 +146,7 @@ fn test_tar_unpack() {
   let config = rzip_lib::RZipExtractConfig {
     target_path: target_path.clone(),
     out_dir: None,
+    delete_after_extracting: false,
   };
 
   let out_path = rzip_lib::get_out_path_for_archive(&config.target_path, &config).unwrap();

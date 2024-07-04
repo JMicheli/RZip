@@ -3,5 +3,8 @@ resolver = "2"
 members = ["apps/cli", "lib"]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.2.2"
 edition = "2021"
+
+[workspace.dependencies]
+tempfile = "3.10.1"

@@ -1,10 +1,10 @@
-use std::{fs::File, path::PathBuf};
+use std::{fs::File, path::Path};
 
 use crate::error::{RZipError, RZipProcessingError};
 
-type UnpackStage = fn(&PathBuf, &PathBuf) -> Result<(), RZipProcessingError>;
+type UnpackStage = fn(&Path, &Path) -> Result<(), RZipProcessingError>;
 
-pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZipError> {
+pub fn unpack_file(path: &Path, out_path: &Path) -> Result<RZipError, RZipError> {
   // Get extension
   // TODO - Handle .tar.gz
   let ext = path
@@ -23,7 +23,7 @@ pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZip
     "zip" => vec![compress_tools_unpack],
     "7z" => vec![compress_tools_unpack, seven_z_unpack],
     "gz" | "tgz" => vec![compress_tools_unpack, flake2_unpack],
-    "xz" => vec![compress_tools_unpack],
+    "xz" | "txz" => vec![compress_tools_unpack],
     "tar" => vec![compress_tools_unpack, tar_unpack],
     "rar" => vec![compress_tools_unpack],
     _ => {
@@ -53,8 +53,8 @@ pub fn unpack_file(path: &PathBuf, out_path: &PathBuf) -> Result<RZipError, RZip
 ///
 /// Documentation: https://github.com/OSSystems/compress-tools-rs/.
 pub fn compress_tools_unpack(
-  archive_path: &PathBuf,
-  out_path: &PathBuf,
+  archive_path: &Path,
+  out_path: &Path,
 ) -> Result<(), RZipProcessingError> {
   let archive_file: File = File::open(archive_path)?;
   compress_tools::uncompress_archive(archive_file, out_path, compress_tools::Ownership::Ignore)
@@ -64,20 +64,14 @@ pub fn compress_tools_unpack(
 /// Unpack an archive using the [sevenz_rust] backend.
 ///
 /// Documentation: https://github.com/dyz1990/sevenz-rust
-pub fn seven_z_unpack(
-  archive_path: &PathBuf,
-  out_path: &PathBuf,
-) -> Result<(), RZipProcessingError> {
+pub fn seven_z_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProcessingError> {
   sevenz_rust::decompress_file(archive_path, out_path).map_err(|e| e.into())
 }
 
 /// Unpack an archive using the [flate2] backend.
 ///
 /// Documentation: https://docs.rs/flate2/latest/flate2/
-pub fn flake2_unpack(
-  archive_path: &PathBuf,
-  out_path: &PathBuf,
-) -> Result<(), RZipProcessingError> {
+pub fn flake2_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProcessingError> {
   use flate2::read::GzDecoder;
   use tar::Archive;
 
@@ -92,7 +86,7 @@ pub fn flake2_unpack(
 /// Unpack an archive using the [tar] backend.
 ///
 /// Documentation: https://docs.rs/tar/latest/tar/
-pub fn tar_unpack(archive_path: &PathBuf, out_path: &PathBuf) -> Result<(), RZipProcessingError> {
+pub fn tar_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProcessingError> {
   use tar::Archive;
 
   let tar = File::open(archive_path).unwrap();
@@ -100,4 +94,25 @@ pub fn tar_unpack(archive_path: &PathBuf, out_path: &PathBuf) -> Result<(), RZip
   archive.unpack(out_path)?;
 
   Ok(())
+}
+
+#[cfg(test)]
+mod test {
+  use std::{fs::File, io::Write};
+
+  use tempfile::TempDir;
+
+  use super::*;
+
+  #[test]
+  fn test_unpack_with_bad_extension() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let test_file_path = temp_dir.path().join("non_archive.txt");
+    let mut file = File::create(&test_file_path).unwrap();
+    file.write_all("Meaningless data".as_bytes()).unwrap();
+
+    let res = unpack_file(&test_file_path, Path::new("./some_path"));
+    assert!(res.is_err());
+  }
 }

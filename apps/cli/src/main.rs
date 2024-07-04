@@ -1,23 +1,30 @@
 use std::path::PathBuf;
 
-use clap::{ArgAction, Parser};
+use clap::{crate_version, ArgAction, Parser};
 
 use rzip_lib::{self, RZipError, RZipExtractConfig};
 
-/// Represents the parameters passed to the RZip utility when run from the command line.
+/// RZip - A recursive unzipping tool. Input a path to a file or directory to
+/// recursively unzip, searching the results of each unzip operation for further
+/// archives and unzipping those as well.
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version = crate_version!(), about, long_about = None)]
+#[command(author = "Joseph W. Micheli, josephwmicheli@gmail.com")]
 pub struct RZipParams {
-  /// The path to search for files to unzip
+  /// The path to an archive file or directory to unpack.
   pub target_path: PathBuf,
 
-  /// Do a live run (default: false)
+  /// Perform a live run. (default: false)
   #[arg(long, action = ArgAction::SetTrue)]
   pub live: bool,
 
-  /// The directory to output to
+  /// The directory to unpack files into, preserving directory structure. Defaults to the directory each archive is in.
   #[arg(long)]
   pub out_dir: Option<PathBuf>,
+
+  /// Delete archives after extracting them. (default: false)
+  #[arg(long, action = ArgAction::SetTrue)]
+  pub delete_archives: bool,
 }
 
 impl From<RZipParams> for RZipExtractConfig {
@@ -25,6 +32,7 @@ impl From<RZipParams> for RZipExtractConfig {
     Self {
       target_path: value.target_path,
       out_dir: value.out_dir,
+      delete_after_extracting: value.delete_archives,
     }
   }
 }
@@ -90,8 +98,8 @@ fn handle_dir(params: RZipParams) -> Result<(), RZipError> {
       print!("{:?}... ", item_path);
       // Live run logic
       match rzip_lib::recursive_file_extract(&item_path, &out_path, &extract_config) {
-        Ok(_) => print!("Done.\n"),
-        Err(e) => print!("Error: {e}\n"),
+        Ok(_) => println!("Done."),
+        Err(e) => println!("Error: {e}"),
       }
     } else {
       // Dry run (explains what it would have done)
@@ -136,4 +144,135 @@ fn handle_file(params: RZipParams) -> Result<(), RZipError> {
   }
 
   Ok(())
+}
+
+#[cfg(test)]
+mod test {
+  use std::{
+    fs::{self, File},
+    io::Write,
+    path::Path,
+  };
+
+  use tempfile::TempDir;
+
+  use super::*;
+
+  #[test]
+  fn test_handle_dir() {
+    let temp_dir = TempDir::new().unwrap();
+    let target_path = temp_dir.path().join("test_data");
+    fs::create_dir_all(&target_path).unwrap();
+    let out_path = temp_dir.path().join("output/path/");
+    copy_tar_gz_data_to(&target_path);
+
+    // Run test function (dry run)
+    let params = RZipParams {
+      target_path: target_path.clone(),
+      live: false,
+      out_dir: Some(out_path.clone()),
+      delete_archives: false,
+    };
+    handle_dir(params).unwrap();
+
+    // Run test function (live run)
+    let params = RZipParams {
+      target_path: target_path.clone(),
+      live: true,
+      out_dir: Some(out_path.clone()),
+      delete_archives: false,
+    };
+    handle_dir(params).unwrap();
+
+    // Test expected files
+    let packed_tar_gz_tar_gz = temp_dir.path().join("test_data/packed_tar_gz.tar.gz");
+    let packed_tar_dir = out_path.join("packed_tar_gz.tar");
+    let doc_tar_gz = out_path.join("packed_tar_gz.tar/doc_tar_gz.txt");
+    assert!(packed_tar_gz_tar_gz.exists());
+    assert!(packed_tar_dir.exists());
+    assert!(doc_tar_gz.exists());
+  }
+
+  #[test]
+  fn handle_dir_empty() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let params = RZipParams {
+      target_path: temp_dir.path().to_path_buf(),
+      live: true,
+      out_dir: None,
+      delete_archives: false,
+    };
+    handle_dir(params).unwrap();
+  }
+
+  #[test]
+  fn test_handle_file() {
+    let temp_dir = TempDir::new().unwrap();
+    let out_path = temp_dir.path().join("output/path/");
+    copy_tar_gz_data_to(temp_dir.path());
+
+    // Run test function (dry run)
+    let params = RZipParams {
+      target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
+      live: false,
+      out_dir: Some(out_path.clone()),
+      delete_archives: false,
+    };
+    handle_file(params).unwrap();
+
+    // Run test function (live run)
+    let params = RZipParams {
+      target_path: temp_dir.path().join("packed_tar_gz.tar.gz"),
+      live: true,
+      out_dir: Some(out_path.clone()),
+      delete_archives: false,
+    };
+    handle_file(params).unwrap();
+
+    // Test expected files
+    let packed_tar_gz_tar_gz = temp_dir.path().join("packed_tar_gz.tar.gz");
+    let packed_tar_dir = out_path.join("packed_tar_gz.tar");
+    let doc_tar_gz = out_path.join("packed_tar_gz.tar/doc_tar_gz.txt");
+    assert!(packed_tar_gz_tar_gz.exists());
+    assert!(packed_tar_dir.exists());
+    assert!(doc_tar_gz.exists());
+  }
+
+  #[test]
+  fn test_handle_file_type_error() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let test_file_path = temp_dir.path().join("non_archive.txt");
+    let mut file = File::create(&test_file_path).unwrap();
+    file.write_all("Meaningless data".as_bytes()).unwrap();
+
+    let params = RZipParams {
+      target_path: test_file_path,
+      live: true,
+      out_dir: None,
+      delete_archives: false,
+    };
+    // The file isn't an archive so we will get an error
+    let res = handle_file(params);
+    assert!(res.is_err());
+  }
+
+  fn get_individual_data_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../lib/tests/data/indiv")
+  }
+
+  /// Copies data to the input `temp_dir`. The data has the structure:
+  ///
+  /// ```bash
+  /// packed_tar_gz.tar.gz
+  /// └── doc_tar_gz.txt
+  /// ```
+  fn copy_tar_gz_data_to(temp_dir: &Path) {
+    let data_root = get_individual_data_root();
+    let packed_tar = data_root.join("packed_tar_gz.tar.gz");
+
+    // Copy each item to temporary directory
+    fs::copy(packed_tar, temp_dir.join("packed_tar_gz.tar.gz")).unwrap();
+  }
 }
