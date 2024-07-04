@@ -23,7 +23,7 @@ pub fn unpack_file(path: &Path, out_path: &Path) -> Result<RZipError, RZipError>
     "zip" => vec![compress_tools_unpack],
     "7z" => vec![compress_tools_unpack, seven_z_unpack],
     "gz" | "tgz" => vec![compress_tools_unpack, flake2_unpack],
-    "xz" => vec![compress_tools_unpack],
+    "xz" | "txz" => vec![compress_tools_unpack],
     "tar" => vec![compress_tools_unpack, tar_unpack],
     "rar" => vec![compress_tools_unpack],
     _ => {
@@ -94,4 +94,25 @@ pub fn tar_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProces
   archive.unpack(out_path)?;
 
   Ok(())
+}
+
+#[cfg(test)]
+mod test {
+  use std::{fs::File, io::Write};
+
+  use tempfile::TempDir;
+
+  use super::*;
+
+  #[test]
+  fn test_unpack_with_bad_extension() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let test_file_path = temp_dir.path().join("non_archive.txt");
+    let mut file = File::create(&test_file_path).unwrap();
+    file.write_all("Meaningless data".as_bytes()).unwrap();
+
+    let res = unpack_file(&test_file_path, Path::new("./some_path"));
+    assert!(res.is_err());
+  }
 }

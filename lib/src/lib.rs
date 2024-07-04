@@ -9,7 +9,7 @@ use std::{
 pub use error::RZipError;
 
 /// The list of extensinsions used to check if a file is an archive.
-const ARCHIVE_EXTENSIONS: [&str; 7] = ["zip", "xz", "tar", "tgz", "gz", "7z", "rar"];
+const ARCHIVE_EXTENSIONS: [&str; 8] = ["zip", "txz", "xz", "tar", "tgz", "gz", "7z", "rar"];
 
 pub struct RZipExtractConfig {
   pub target_path: PathBuf,
