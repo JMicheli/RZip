@@ -4,22 +4,25 @@ use clap::{crate_version, ArgAction, Parser};
 
 use rzip_lib::{self, RZipError, RZipExtractConfig};
 
-/// Represents the parameters passed to the RZip utility when run from the command line.
+/// RZip - A recursive unzipping tool. Input a path to a file or directory to
+/// recursively unzip, searching the results of each unzip operation for further
+/// archives and unzipping those as well.
 #[derive(Parser, Debug)]
 #[command(version = crate_version!(), about, long_about = None)]
+#[command(author = "Joseph W. Micheli, josephwmicheli@gmail.com")]
 pub struct RZipParams {
-  /// The path to search for files to unzip
+  /// The path to an archive file or directory to unpack.
   pub target_path: PathBuf,
 
-  /// Do a live run (default: false)
+  /// Perform a live run. (default: false)
   #[arg(long, action = ArgAction::SetTrue)]
   pub live: bool,
 
-  /// The directory to output to
+  /// The directory to unpack files into, preserving directory structure. Defaults to the directory each archive is in.
   #[arg(long)]
   pub out_dir: Option<PathBuf>,
 
-  /// Delete archives after extracting (default: false)
+  /// Delete archives after extracting them. (default: false)
   #[arg(long, action = ArgAction::SetTrue)]
   pub delete_archives: bool,
 }
