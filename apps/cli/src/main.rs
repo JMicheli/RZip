@@ -145,7 +145,11 @@ fn handle_file(params: RZipParams) -> Result<(), RZipError> {
 
 #[cfg(test)]
 mod test {
-  use std::{fs, path::Path};
+  use std::{
+    fs::{self, File},
+    io::Write,
+    path::Path,
+  };
 
   use tempfile::TempDir;
 
@@ -187,6 +191,19 @@ mod test {
   }
 
   #[test]
+  fn handle_dir_empty() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let params = RZipParams {
+      target_path: temp_dir.path().to_path_buf(),
+      live: true,
+      out_dir: None,
+      delete_archives: false,
+    };
+    handle_dir(params).unwrap();
+  }
+
+  #[test]
   fn test_handle_file() {
     let temp_dir = TempDir::new().unwrap();
     let out_path = temp_dir.path().join("output/path/");
@@ -217,6 +234,25 @@ mod test {
     assert!(packed_tar_gz_tar_gz.exists());
     assert!(packed_tar_dir.exists());
     assert!(doc_tar_gz.exists());
+  }
+
+  #[test]
+  fn test_handle_file_type_error() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let test_file_path = temp_dir.path().join("non_archive.txt");
+    let mut file = File::create(&test_file_path).unwrap();
+    file.write_all("Meaningless data".as_bytes()).unwrap();
+
+    let params = RZipParams {
+      target_path: test_file_path,
+      live: true,
+      out_dir: None,
+      delete_archives: false,
+    };
+    // The file isn't an archive so we will get an error
+    let res = handle_file(params);
+    assert!(res.is_err());
   }
 
   fn get_individual_data_root() -> PathBuf {

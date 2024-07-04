@@ -35,7 +35,10 @@ jobs:
       # Install code coverage tooling
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov
-      # Run dev tests
+      # Cargo clippy
+      - name: Run clippy
+        run: cargo clippy
+      # Cargo test
       - name: Run tests
         run: cargo test
       # Run coverage tests
@@ -80,6 +83,9 @@ jobs:
           cd lib
           cargo vcpkg build
           cd ..
+      # Cargo clippy
+      - name: Run clippy
+        run: cargo clippy
       # Cargo test
       - name: Run dev tests
         run: cargo test
