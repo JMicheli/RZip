@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use clap::{ArgAction, Parser};
+use clap::{crate_version, ArgAction, Parser};
 
 use rzip_lib::{self, RZipError, RZipExtractConfig};
 
 /// Represents the parameters passed to the RZip utility when run from the command line.
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version = crate_version!(), about, long_about = None)]
 pub struct RZipParams {
   /// The path to search for files to unzip
   pub target_path: PathBuf,
