@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y \
           libarchive-dev \
-          javascriptcoregtk-4.1 \
+          javascriptcoregtk-4.0 \
           libsoup2.4-dev \
           webkit2gtk-4.1
         #build-essential
