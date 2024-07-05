@@ -1,5 +1,5 @@
 [package]
-name = "rzip"
+name = "rzip_cli"
 version.workspace = true
 edition.workspace = true
 
