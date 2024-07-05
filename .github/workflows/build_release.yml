@@ -33,11 +33,10 @@ jobs:
           javascriptcoregtk-4.0 \
           libsoup2.4-dev \
           webkit2gtk-4.0 \
-          curl
       # Install pnpm dependencies for tauri
       - name: Install pnpm and dependencies
         run: |
-          curl -fsSL https://get.pnpm.io/install.sh | sh -
+          wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.shrc" SHELL="$(which sh)" sh -
           cd apps/gui/
           pnpm install
           cd ../..
