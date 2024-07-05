@@ -27,7 +27,7 @@ jobs:
           toolchain: stable
       # Install libarchive
       - name: Install libarchive
-        run: sudo apt-get update && sudo apt-get install -y libarchive-dev
+        run: sudo apt-get update && sudo apt-get install -y libarchive-dev javascriptcoregtk-4.1 libsoup-3.0 webkit2gtk-4.1
       # Load/initialize cache
       - name: Cache dependencies
         uses: actions/cache@v3

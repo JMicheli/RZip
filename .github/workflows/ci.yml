@@ -31,7 +31,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       # Install libarchive
       - name: Install libarchive
-        run: sudo apt-get update && sudo apt-get install -y libarchive-dev
+        run: sudo apt-get update && sudo apt-get install -y libarchive-dev javascriptcoregtk-4.1 libsoup-3.0 webkit2gtk-4.1
       # Install code coverage tooling
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov
