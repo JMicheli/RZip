@@ -45,11 +45,12 @@ jobs:
           node-version: 20
           cache: "pnpm"
           cache-dependency-path: "apps/gui/pnpm-lock.yaml"
-      # Install pnpm dependencies for Tauri
+      # Install and build pnpm dependencies for Tauri
       - name: Install Tauri dependencies
         run: |
           cd apps/gui
           pnpm install
+          pnpm build
           cd ../..
       # Load/initialize cache
       - name: Cache dependencies
