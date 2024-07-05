@@ -29,9 +29,22 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      # Install libarchive
-      - name: Install libarchive
-        run: sudo apt-get update && sudo apt-get install -y libarchive-dev javascriptcoregtk-4.1 libsoup-3.0 webkit2gtk-4.1
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y
+          libarchive-dev
+          javascriptcoregtk-4.1
+          libsoup-2.4
+          webkit2gtk-4.1
+        #build-essential
+        #curl
+        #wget
+        #file
+        #libssl-dev
+        #libgtk-3-dev
+        #libayatana-appindicator3-dev
+        #librsvg2-dev
       # Install code coverage tooling
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov
