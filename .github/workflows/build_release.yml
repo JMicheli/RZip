@@ -33,11 +33,21 @@ jobs:
           javascriptcoregtk-4.0 \
           libsoup2.4-dev \
           webkit2gtk-4.0 \
-      # Install pnpm dependencies for tauri
-      - name: Install pnpm and dependencies
+      # Install pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      # Install node.js
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      # Install pnpm dependencies for Tauri
+      - name: Install Tauri dependencies
         run: |
-          wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.shrc" SHELL="$(which sh)" sh -
-          cd apps/gui/
+          cd apps/gui
           pnpm install
           cd ../..
       # Load/initialize cache
