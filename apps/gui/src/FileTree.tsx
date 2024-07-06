@@ -1,101 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { Tree, TreeDataNode } from "antd";
 import { CarryOutOutlined, CheckOutlined, FormOutlined } from "@ant-design/icons";
 
-const treeData: TreeDataNode[] = [
-  {
-    title: "parent 1",
-    key: "0-0",
-    icon: <CarryOutOutlined />,
-    children: [
-      {
-        title: "parent 1-0",
-        key: "0-0-0",
-        icon: <CarryOutOutlined />,
-        children: [
-          { title: "leaf", key: "0-0-0-0", icon: <CarryOutOutlined /> },
-          {
-            title: (
-              <>
-                <div>multiple line title</div>
-                <div>multiple line title</div>
-              </>
-            ),
-            key: "0-0-0-1",
-            icon: <CarryOutOutlined />
-          },
-          { title: "leaf", key: "0-0-0-2", icon: <CarryOutOutlined /> }
-        ]
-      },
-      {
-        title: "parent 1-1",
-        key: "0-0-1",
-        icon: <CarryOutOutlined />,
-        children: [{ title: "leaf", key: "0-0-1-0", icon: <CarryOutOutlined /> }]
-      },
-      {
-        title: "parent 1-2",
-        key: "0-0-2",
-        icon: <CarryOutOutlined />,
-        children: [
-          { title: "leaf", key: "0-0-2-0", icon: <CarryOutOutlined /> },
-          {
-            title: "leaf",
-            key: "0-0-2-1",
-            icon: <CarryOutOutlined />,
-            switcherIcon: <FormOutlined />
-          }
-        ]
-      }
-    ]
-  },
-  {
-    title: "parent 2",
-    key: "0-1",
-    icon: <CarryOutOutlined />,
-    children: [
-      {
-        title: "parent 2-0",
-        key: "0-1-0",
-        icon: <CarryOutOutlined />,
-        children: [
-          { title: "leaf", key: "0-1-0-0", icon: <CarryOutOutlined /> },
-          { title: "leaf", key: "0-1-0-1", icon: <CarryOutOutlined /> }
-        ]
-      }
-    ]
-  }
-];
+const iconMapper: Record<string, JSX.Element> = {
+  CarryOutOutlined: <CarryOutOutlined />,
+  CheckOutlined: <CheckOutlined />,
+  FormOutlined: <FormOutlined />
+};
 
+const getIcon = (iconName?: string) => {
+  return iconName ? iconMapper[iconName] : undefined;
+};
 function FileTree() {
-  const [showLine, setShowLine] = useState<boolean>(true);
-  const [showIcon, setShowIcon] = useState<boolean>(false);
-  const [showLeafIcon, setShowLeafIcon] = useState<React.ReactNode>(true);
+  const [treeData, setTreeData] = useState([] as TreeDataNode[]);
 
-  const onSelect = (selectedKeys: React.Key[], info: any) => {
-    console.log("selected", selectedKeys, info);
-  };
-
-  const handleLeafIconChange = (value: "true" | "false" | "custom") => {
-    if (value === "custom") {
-      return setShowLeafIcon(<CheckOutlined />);
-    }
-
-    if (value === "true") {
-      return setShowLeafIcon(true);
-    }
-
-    return setShowLeafIcon(false);
-  };
+  useEffect(() => {
+    invoke("get_file_tree")
+      .then((data) => {
+        let typed_data = data as any[];
+        const mappedData = typed_data.map((node) => ({
+          ...node,
+          icon: getIcon(node.icon),
+          children: node.children
+            ? node.children.map((child: { icon: string | undefined }) => ({
+                ...child,
+                icon: getIcon(child.icon)
+              }))
+            : undefined
+        }));
+        setTreeData(mappedData);
+      })
+      .catch((error) => console.error("Error fetching file tree:", error));
+  }, []);
 
   return (
     <div>
       <Tree
-        showLine={showLine ? { showLeafIcon } : false}
-        showIcon={showIcon}
+        showLine={{ showLeafIcon: true }}
+        showIcon
         defaultExpandedKeys={["0-0-0"]}
-        onSelect={onSelect}
+        onSelect={(selectedKeys, info) => console.log("selected", selectedKeys, info)}
         treeData={treeData}
       />
     </div>
