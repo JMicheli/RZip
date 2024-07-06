@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
 import { Tree, TreeDataNode } from "antd";
 import { CarryOutOutlined, CheckOutlined, FormOutlined } from "@ant-design/icons";
 
