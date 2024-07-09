@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod utils;
+
 use std::{env, fs, path::Path};
 
 use serde::{Deserialize, Serialize};
@@ -18,35 +20,6 @@ fn get_file_tree(path: String) -> Vec<TreeDataNode> {
   let root_path = Path::new(&path);
 
   vec![build_tree_node(root_path, "0")]
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ValidationSettings {
-  allow_files: bool,
-  allow_directories: bool,
-  allow_nonexistent: bool,
-}
-
-#[tauri::command]
-fn validate_path(path: String, settings: ValidationSettings) -> bool {
-  let rust_path = Path::new(&path);
-
-  // If we don't allow nonexistent and the path doesn't exist, return false
-  if !settings.allow_nonexistent && !rust_path.exists() {
-    return false;
-  }
-
-  // If we don't allow files and we've got a file selected
-  if !settings.allow_files && rust_path.is_file() {
-    return false;
-  }
-  // If we don't allow directories and we've got a directory selected
-  if !settings.allow_directories && rust_path.is_dir() {
-    return false;
-  }
-
-  // Return true if all of the above were passed
-  true
 }
 
 fn build_tree_node(path: &Path, key_prefix: &str) -> TreeDataNode {
@@ -103,7 +76,7 @@ fn main() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
       start_extraction,
-      validate_path,
+      utils::validate_path,
       do_refresh,
       get_file_tree
     ])

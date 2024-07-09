@@ -147,7 +147,7 @@ fn handle_file(params: RZipParams) -> Result<(), RZipError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
   use std::{
     fs::{self, File},
     io::Write,
