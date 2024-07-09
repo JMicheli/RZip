@@ -1,10 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import UiRoot from "./UiRoot";
+import RzipApp from "./layout/RzipApp";
 import "./styles.css";
+import RzipConfigProvider from "./RzipConfigProvider";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <UiRoot />
+    <RzipConfigProvider>
+      <RzipApp />
+    </RzipConfigProvider>
   </React.StrictMode>
 );

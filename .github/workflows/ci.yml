@@ -66,7 +66,7 @@ jobs:
       - name: Run tests
         run: cargo test
       # Run coverage tests
-      - name: Generate code coverage
+      - name: Generate code coverage data
         run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
       # Upload coverage data
       - name: Upload coverage to Codecov
