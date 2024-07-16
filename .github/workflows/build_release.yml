@@ -25,9 +25,33 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-      # Install libarchive
-      - name: Install libarchive
-        run: sudo apt-get update && sudo apt-get install -y libarchive-dev
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+          libarchive-dev \
+          javascriptcoregtk-4.0 \
+          libsoup2.4-dev \
+          webkit2gtk-4.0 \
+      # Install pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      # Install node.js
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: "apps/gui/pnpm-lock.yaml"
+      # Install and build pnpm dependencies for Tauri
+      - name: Install Tauri dependencies
+        run: |
+          cd apps/gui
+          pnpm install
+          pnpm build
+          cd ../..
       # Load/initialize cache
       - name: Cache dependencies
         uses: actions/cache@v3

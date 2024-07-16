@@ -2,6 +2,33 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Start Tauri development",
+			"dependsOn": ["Install Tauri dependencies"],
+			"type": "shell",
+			"command": "pnpm tauri dev",
+			"group": "test",
+			"problemMatcher": ["$rustc", "$tsc"],
+			"options": { "cwd": "${workspaceFolder}/apps/gui/" },
+			"presentation": {
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
+			"label": "Install Tauri dependencies",
+			"type": "shell",
+			"command":  "pnpm install",
+			"group": "test",
+			"problemMatcher": ["$rustc", "$tsc"],
+			"options": { "cwd": "${workspaceFolder}/apps/gui/" },
+			"presentation": {
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
 			"label": "Run tests",
 			"type": "shell",
 			"command": "cargo test",

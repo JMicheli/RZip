@@ -97,7 +97,7 @@ pub fn tar_unpack(archive_path: &Path, out_path: &Path) -> Result<(), RZipProces
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
   use std::{fs::File, io::Write};
 
   use tempfile::TempDir;
