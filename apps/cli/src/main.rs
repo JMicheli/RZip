@@ -19,7 +19,7 @@ pub struct RZipParams {
   pub live: bool,
 
   /// The directory to unpack files into, preserving directory structure. Defaults to the directory each archive is in.
-  #[arg(long)]
+  #[arg(long, short)]
   pub out_dir: Option<PathBuf>,
 
   /// Delete archives after extracting them. (default: false)
